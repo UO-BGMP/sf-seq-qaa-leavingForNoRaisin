@@ -1,0 +1,416 @@
+---
+title: "Sf-Seq_Bi624"
+author: "Devin Dinwiddie"
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+output:
+  html_document: default
+  pdf_document: default
+  word_document: default
+---
+
+### Data: 
+
+```
+Devin	15_3C_mbnl	10_2G_both #data files I am working with
+
+```
+
+### Part 1 - SF-Seq read quality score distributions
+
+#### 1)
+
+```
+ FastQC: FastQC/0.11.5-Java-1.8.0_131 #fastqc version 
+
+```
+
+```{bash, eval=F, echo=TRUE}
+
+# fastqc sbatch script
+fastqc 15_3C_mbnl_S11_L008_R1_001.fastq.gz 15_3C_mbnl_S11_L008_R2_001.fastq.gz 10_2G_both_S8_L008_R1_001.fastq.gz 10_2G_both_S8_L008_R2_001.fastq.gz -o fqcOut --noextract
+
+```
+
+
+#### 10_2G_R1
+
+```{r echo=FALSE, out.width='100%'}
+knitr::include_graphics('./2GR1PBQC.jpg')
+knitr::include_graphics('./2GR1PLQC.jpg')
+knitr::include_graphics('./2GR1N.jpg')
+```
+
+
+#### 10_2G_R2
+
+
+```{r echo=FALSE, out.width='100%'}
+knitr::include_graphics('./2GR2PBQC.jpg')
+knitr::include_graphics('./2GR2PLQC.jpg')
+knitr::include_graphics('./2GR2N.jpg')
+```
+
+
+#### 15_3C_R1
+
+
+```{r echo=FALSE, out.width='100%'}
+knitr::include_graphics('./3CR1PBQC.jpg')
+knitr::include_graphics('./3CR1PLQC.jpg')
+knitr::include_graphics('./3CR1N.jpg')
+```
+
+
+#### 15_3C_R2
+
+
+```{r echo=FALSE, out.width='100%'}
+knitr::include_graphics('./3CR2PBQC.jpg')
+knitr::include_graphics('./3CR2PLQC.jpg')
+knitr::include_graphics('./3CR2N.jpg')
+```
+
+
+
+produce plots of the per-base N content, and comment on whether or not they are consistent with the quality score plots.
+
+```
+the per base N content for all four files is very low (0) and the per base qualitity scores are generally high (30+). N content would produce very low quality scores which I do not see so this seems consistent with expectations.
+
+```
+
+#### compare Fastqc with my quality score script.
+
+
+####2)
+
+```{bash,eval=F, echo=T}
+
+# sbatch script for my quality script
+module load python3/3.6.1
+./qual_dist_zipped.py -f "10_2G_both_S8_L008_R1_001.fastq" -o1 "2GR1_Bpq.tsv" -o2 "2GR1_mlq.tsv" #2GR1
+./qual_dist_zipped.py -f "10_2G_both_S8_L008_R2_001.fastq" -o1 "2GR2_Bpq.tsv" -o2 "2GR2_mlq.tsv" #2GR2
+./qual_dist_zipped.py -f "15_3C_mbnl_S11_L008_R1_001.fastq" -o1 "3CR1_Bpq.tsv" -o2 "3CR1_mlq.tsv" #3CR1
+./qual_dist_zipped.py -f "15_3C_mbnl_S11_L008_R2_001.fastq" -o1 "3CR2_Bpq.tsv" -o2 "3CR2_mlq.tsv" #3CR2
+
+```
+
+
+#### 10_2GR1
+
+
+```{r echo=FALSE}
+# read the data
+meanBp1=read.table("2GR1_Bpq.tsv")
+meanLineQ1=read.table("2GR1_mlq.tsv")
+
+names2=seq(1:101) # create a seq of all numbers from 1 -101
+meanBp1$V1=names2 # replace the column holding postions  with above names ie 1-101
+
+
+plot(meanBp1$V1,meanBp1$V2, yaxt='n',xaxt='n',col = "darkgreen",main="Average per nucleotide quality score for 2G sequence Read 1",xlab = "Base Pair postion",ylab="Average Quality Score",cex.main=.8,col.main="blue",cex=1,pch=21,bg="thistle")
+axis(1,at=seq(1:101),labels = seq(1, 101, by=1))
+axis(2,at=seq_along(1:40),labels = seq(1,40,by=1),las=2)
+
+plot(meanLineQ1$V1,meanLineQ1$V2,axes=F, col = "darkgreen",main="Average per line quality score for 2G sequence Read 1",xlab = "mean quality score",ylab="frequency",cex.main=1,col.main="blue",cex=1,pch=21,bg="thistle")
+axis(1,col = "red",cex.axis=.7,at=seq_along(1:42))
+axis(2,col="red",las=1,cex.axis=.5)
+
+```
+
+#### 10_2GR2
+
+
+```{r echo=FALSE}
+# read the data
+meanBp2=read.table("2GR2_Bpq.tsv")
+meanLineQ2=read.table("2GR2_mlq.tsv")
+
+
+meanBp2$V1=names2 # replace the column holding postions  with above names ie 1-101
+
+
+plot(meanBp2$V1,meanBp2$V2, yaxt='n',xaxt='n',col = "darkgreen",main="Average per nucleotide quality score for 2G sequence Read 2",xlab = "Base Pair postion",ylab="Average Quality Score",cex.main=.8,col.main="blue",cex=1,pch=21,bg="thistle")
+axis(1,at=seq(1:101),labels = seq(1, 101, by=1))
+axis(2,at=seq_along(1:40),labels = seq(1,40,by=1),las=2)
+
+plot(meanLineQ2$V1,meanLineQ2$V2,axes=F, col = "darkgreen",main="Average per line quality score for 2G sequence Read 2",xlab = "mean quality score",ylab="frequency",cex.main=1,col.main="blue",cex=1,pch=21,bg="thistle")
+axis(1,col = "red",cex.axis=.7,at=seq_along(1:42))
+axis(2,col="red",las=1,cex.axis=.5)
+
+```
+
+#### 15_3CR1
+
+
+```{r echo=FALSE}
+# read the data
+meanBp3=read.table("3CR1_Bpq.tsv")
+meanLineQ3=read.table("3CR1_mlq.tsv")
+
+
+meanBp3$V1=names2 # replace the column holding postions  with above names ie 1-101
+
+
+plot(meanBp3$V1,meanBp3$V2, yaxt='n',xaxt='n',col = "darkgreen",main="Average per nucleotide quality score for 3C sequence Read 1",xlab = "Base Pair postion",ylab="Average Quality Score",cex.main=.8,col.main="blue",cex=1,pch=21,bg="thistle")
+axis(1,at=seq(1:101),labels = seq(1, 101, by=1))
+axis(2,at=seq_along(1:40),labels = seq(1,40,by=1),las=2)
+
+plot(meanLineQ3$V1,meanLineQ3$V2,axes=F, col = "darkgreen",main="Average per line quality score for 3C sequence Read 1",xlab = "mean quality score",ylab="frequency",cex.main=1,col.main="blue",cex=1,pch=21,bg="thistle")
+axis(1,col = "red",cex.axis=.7,at=seq_along(1:42))
+axis(2,col="red",las=1,cex.axis=.5)
+
+```
+
+
+#### 15_3CR2
+
+
+```{r echo=FALSE}
+# read the data
+meanBp4=read.table("3CR2_Bpq.tsv")
+meanLineQ4=read.table("3CR2_mlq.tsv")
+
+
+meanBp3$V1=names2 # replace the column holding postions  with above names ie 1-101
+
+
+plot(meanBp4$V1,meanBp4$V2, yaxt='n',xaxt='n',col = "darkgreen",main="Average per nucleotide quality score for 3C sequence Read 2",xlab = "Base Pair postion",ylab="Average Quality Score",cex.main=.8,col.main="blue",cex=1,pch=21,bg="thistle")
+axis(1,at=seq(1:101),labels = seq(1, 101, by=1))
+axis(2,at=seq_along(1:40),labels = seq(1,40,by=1),las=2)
+
+plot(meanLineQ4$V1,meanLineQ4$V2,axes=F, col = "darkgreen",main="Average per line quality score for 3C sequence Read 2",xlab = "mean quality score",ylab="frequency",cex.main=1,col.main="blue",cex=1,pch=21,bg="thistle")
+axis(1,col = "red",cex.axis=.7,at=seq_along(1:42))
+axis(2,col="red",las=1,cex.axis=.5)
+
+```
+
+
+Describe how the ```FastQC``` quality score distribution plots compare to your own. If different, propose an explanation. Also, does the runtime differ? If so, why?
+
+```
+The plots from fastqc are identical to the plots generated from my script.  Although fastqcs' are much better looking in my opionion.  The runtime was significantly faster for fastqc (~5min per file ) compared to my script (~25 -60 min per file).  I would imagine this may be due to fastqc being written in java and being optimised for run time both code wise and algorithmically. Fastqc produced alot more data in a way shorter time.
+
+```
+
+### Part 2 - Adaptor trimming comparison
+
+####3)
+
+
+Look into the adaptor trimming options for ```cutadapt```, ```process_shortreads```, and ```Trimmomatic``` (all on Talapas), and briefly describe the differences
+
+```
+Trimmomatic 
+    Remove adapters (ILLUMINACLIP:TruSeq3-PE.fa:2:30:10)
+    Remove leading low quality or N bases (below quality 3) (LEADING:3)
+    Remove trailing low quality or N bases (below quality 3) (TRAILING:3)
+    Scan the read with a 4-base wide sliding window, cutting when the average quality per base drops below 15 (SLIDINGWINDOW:4:15)
+    Drop reads below the 36 bases long (MINLEN:36)
+    written in java
+
+cutadapt
+    Cutadapt finds and removes adapter sequences, primers, poly-A tails
+    and other types of unwanted sequence from your high-throughput sequencing reads. 
+    can adjust for anchored adapters.
+    written in python
+    
+Process_shortreads
+    trims reads below quality threshold makes them usefull for downstream analysis instead of discarding them. designed with Stacks for rad seq data. seperates  untrimmed paired end reads into seperate files. part of the stacks package.
+    
+These all do the same thing with a little different flavor but are esscentially the same.
+
+```
+
+```{bash,eval=F,echo=T}
+# sbatch script for process short reads
+
+ml easybuild  icc/2017.1.132-GCC-6.3.0-2.27  impi/2017.1.132  Stacks
+
+process_shortreads  -1 /home/devind/Bi624/sf-seq/10_2G_both_S8_L008_R1_001.fastq.gz \
+-2 /home/devind/Bi624/sf-seq/10_2G_both_S8_L008_R2_001.fastq.gz \
+-i 'gzfastq' -o /home/devind/Bi624/sf-seq/2Gpro_out -c -q \
+--adapter_1 AGATCGGAAGAGCACACGTCTGAACTCCAGTC \
+--adapter_2 AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT \
+--adapter_mm 2
+
+process_shortreads  -1 /home/devind/Bi624/sf-seq/15_3C_mbnl_S11_L008_R1_001.fastq.gz \
+-2 /home/devind/Bi624/sf-seq/15_3C_mbnl_S11_L008_R2_001.fastq.gz \
+-i 'gzfastq' -o /home/devind/Bi624/sf-seq/3Cpro_out -c -q \
+--adapter_1 AGATCGGAAGAGCACACGTCTGAACTCCAGTC \
+--adapter_2 AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT \
+--adapter_mm 2
+
+```
+
+
+What proportion of reads (both forward and reverse) was trimmed? 
+
+```
+2G R1 & R2
+ 
+162954138 total sequences;
+  3522551 reads contained adapter sequence;
+  0 ambiguous barcode drops;
+  1326791 low quality read drops;
+  1325639 trimmed reads;
+  0 orphaned paired-end reads;
+159430435 retained reads.
+
+# 0.8% trimmed
+
+3C R1 & R2
+
+15612806 total sequences;
+  716101 reads contained adapter sequence;
+  0 ambiguous barcode drops;
+  127153 low quality read drops;
+  503805 trimmed reads;
+  0 orphaned paired-end reads;
+15273357 retained reads.
+
+# 3.22% trimmed
+
+```
+
+```{bash,eval=F,echo=F}
+# sanity check
+
+#forward adapter
+grep -A1 --no-group-separator "^@K00" 10_2G_both_S8_L008_R1_001.fastq | grep -v "^@K00"| grep "AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC"| wc -l
+22249
+
+
+#reverse adapter
+grep -A1 --no-group-separator "^@K00" 10_2G_both_S8_L008_R1_001.fastq | grep -v "^@K00"| grep "AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT"| wc -l # $ for end
+0
+
+
+```
+
+
+#### 4)
+
+Plot the trimmed read length distributions for both forward and reverse reads (on the same plot). If necessary, consult Assignment 5 (Block 1) from Bi 623 to refresh your memory.
+
+```{bash,eval=F,echo=T}
+# determine the length of seq lines for each file output to new txt file
+zcat 10_2G_both_S8_L008_R1_001.1.fq.gz | awk '{if(NR%4==2) print length($1)}' | sort -n | uniq -c > ../2GR1_cutLen.txt
+zcat 10_2G_both_S8_L008_R2_001.2.fq.gz | awk '{if(NR%4==2) print length($1)}' | sort -n | uniq -c > ../2GR2_cutLen.txt
+zcat 15_3C_mbnl_S11_L008_R1_001.1.fq.gz | awk '{if(NR%4==2) print length($1)}' | sort -n | uniq -c > ../3CR1_cutLen.txt
+zcat 15_3C_mbnl_S11_L008_R2_001.2.fq.gz | awk '{if(NR%4==2) print length($1)}' | sort -n | uniq -c > ../3CR2_cutLen.txt
+
+```
+
+```{r,echo=F,warning=FALSE,message=FALSE}
+#plot the seq len
+library(ggplot2)
+l2GR1=cbind(read.table('2GR1_cutLen.txt', col.names=c('count', 'len')), set='10_2G_R1')
+l2GR2=cbind(read.table('2GR2_cutLen.txt', col.names=c('count', 'len')), set='10_2G_R2')
+l3CR1=cbind(read.table('3CR1_cutLen.txt', col.names=c('count', 'len')), set='15_3C_R1')
+l3CR2=cbind(read.table('3CR2_cutLen.txt', col.names=c('count', 'len')), set='15_cC_R2')
+lengths=rbind(l2GR1, l2GR2, l3CR1, l3CR2)
+ggplot(data=lengths, mapping = aes(x=len, y=count, color=set))+
+geom_point(alpha=0.5)+
+scale_y_log10()+
+scale_x_continuous(name="length")
+
+```
+
+
+####5)
+
+Briefly describe whether the adaptor trimming results are consistent with the insert size distributions for your libraries.
+
+```
+yes they seem to be consistant. each library had a average sequence length of ~400 -500 bp which would indicate adapter contamination in inserts of ~150 to 275 bp. library 15 had more adapter dimers and shorter insert lengths thus more trimming. The process short reads trims more than just adapter sequences (low qual etc.).
+```
+
+### Part 3 - rRNA reads and strand-specificity
+
+####6)
+
+Find publicly available mouse rRNA sequences and generate a gsnap database from them. Align the SF-Seq reads to your mouse rRNA database and report the proportion of reads that likely came from rRNAs.
+
+```{bash,eval=F,echo=T}
+# generate rRNA fasta from ncRNA
+zcat Mus_musculus.GRCm38.ncrna.fa.gz | awk 'BEGIN{RS=">"}NR>1{sub("\n","\t"); gsub("\n",""); print RS$0}' | grep "rRNA" | awk 'BEGIN{RS=">"}NR>1{sub("\t","\n");print RS$0}' |awk '!/^>/ { printf "%s",$0; n = "\n" } /^>/ { print n $0; n = "" }END { printf "%s", n }'
+
+# modules for gmap-gsnap
+ml easybuild  GCC/6.3.0-2.27  OpenMPI/2.0.2  GMAP-GSNAP/2017-06-20
+
+# gmap script
+gmap_build -D /home/devind/Bi624/sf-seq/mapped -d rRNA mouse_rRNA.fasta
+
+# gsnap script
+gsnap -D /home/devind/Bi624/sf-seq/mapped/rRNA -d rRNA -B 4 -m 20 -t 8 -O --split-output 2GR1gsnap_out -A sam /home/devind/Bi624/sf-seq/10_2G_both_S8_L008_R1_001.fastq
+
+gsnap -D /home/devind/Bi624/sf-seq/mapped/rRNA -d rRNA -B 4 -m 20 -t 8 -O --split-output \
+3Cgsnap_out -A sam /home/devind/Bi624/sf-seq/15_3C_mbnl_S11_L008_R1_001.fastq
+
+#determine the number of non-mapping rRNA
+cat 2GR1gsnap_out.nomapping | grep -v "^@" | wc -l # get rid of seq headers then count lines
+81200983
+
+cat 3Cgsnap_out.nomapping | grep -v "^@" | wc -l # get rid of seq headers then count lines
+7729602
+
+```
+
+Total alligned rRNA 10_2G: `r as.integer(81477069-81200983)`%
+
+Percentage of reads from rRNA for 10_2G: `r (276086/81477069)*100`
+
+Total alligned rRNA 15_3C: `r as.integer(7806403-7729602)`
+
+Percentage of reads from rRNA for 15_3C: `r (76801/7806403)*100`%
+
+####7)
+
+Demonstrate convincingly that the SF-Seq data are from "strand-specific" RNA-Seq libraries
+
+```{bash,eval=F,echo=T}
+# build a map of cdna mouse library from ensemble
+
+gmap_build -D /home/devind/Bi624/sf-seq/cdmapped -d CDNA -g Mus_musculus.GRCm38.cdna.all.fa.gz
+
+#run gmap on the reads using the CDNA map
+ml easybuild  GCC/6.3.0-2.27  OpenMPI/2.0.2  GMAP-GSNAP/2017-06-20
+cat 10_2G_both_S8_L008_R1_001.fastq | head -400000 | gmap -f 3 -D /home/devind/Bi624/sf-seq/cdmapped -d CDNA > 2GR1.gff
+cat 10_2G_both_S8_L008_R2_001.fastq | head -400000 | gmap -f 3 -D /home/devind/Bi624/sf-seq/cdmapped -d CDNA > 2GR2.gff
+cat 15_3C_mbnl_S11_L008_R1_001.fastq | head -400000 | gmap -f 3 -D /home/devind/Bi624/sf-seq/cdmapped -d CDNA > 3CR1.gff
+cat 15_3C_mbnl_S11_L008_R1_001.fastq | head -400000 | gmap -f 3 -D /home/devind/Bi624/sf-seq/cdmapped -d CDNA > 3CR2.gff
+
+#look in the files for indcation of forward or reverse strand (+ or -) 
+cat 2GR1.gff | grep -v "^#" | cut -f 7 | sort | uniq -c #2GR1
+257940 -
+  5260 +
+  
+cat 2GR2.gff | grep -v "^#" | cut -f 7 | sort | uniq -c #2GR2
+   5083 -
+ 259983 +
+
+cat 3CR1.gff | grep -v "^#" | cut -f 7 | sort | uniq -c #3CR1
+ 243369 -
+   6976 +
+   
+cat 3CR2.gff | grep -v "^#" | cut -f 7 | sort | uniq -c #3CR2
+   6959 -
+ 244506 +
+
+```
+
+```{r,echo=F}
+#plot strand specificity
+strand=data.frame(Read1=c(rep('10_2G',2),rep('15_3C',2)), strd=c('-','+','-','+'), count=c(257940,5260,243369,6976))
+ggplot(data = strand,mapping = aes(x=Read1,y=count, group=strd, fill=strd))+
+geom_col(position = 'dodge')+
+ggtitle("Strand Specificity Read 1")+
+theme(plot.title = element_text(hjust = 0.5))
+
+strand=data.frame(Read2=c(rep('10_2G',2),rep('15_3C',2)), strd=c('+','-','+','-'), count=c(259983,5083,244506,6959))
+ggplot(data = strand,mapping = aes(x=Read2,y=count, group=strd, fill=strd))+
+geom_col(position = 'dodge')+
+ggtitle("Strand Specificity Read 2")+
+theme(plot.title = element_text(hjust = 0.5))
+```
